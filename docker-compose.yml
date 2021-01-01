@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  api:
+    image: muzero-replicable_api
+    volumes:
+      - ./models:/app/models
+      - ../muzero-general:/app/submodules/muzero-general
+    environment:
+      - MODEL_PATH_scorefour=./models/model.checkpoint
+      - CUDA_VISIBLE_DEVICES=
+    ports:
+      - "8000:8000"
+
+  scorefour-ui:
+    build: .
+    # environment:
+    #   - NGINX_ENTRYPOINT_QUIET_LOGS=1
+    volumes:
+      - .:/opt/ui
+
+  reverseproxy:
+    image: nginx:1.18
+    environment:
+      - NGINX_ENTRYPOINT_QUIET_LOGS=1
+    volumes:
+      - ./reverseproxy/conf.d:/etc/nginx/conf.d
+    ports:
+      - "8888:8888"
+    depends_on:
+      - api
+      - scorefour-ui
